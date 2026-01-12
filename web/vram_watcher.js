@@ -49,6 +49,7 @@ app.registerExtension({
         percent: 0,
         used_bytes: 0,
         total_bytes: 0,
+        free_bytes: 0,
         available: false,
         reason: "",
         ram_percent: 0,
@@ -74,6 +75,17 @@ app.registerExtension({
       // Bar order: VRAM on top or RAM on top
       if (typeof this.properties.vram_bar_order !== "string") {
         this.properties.vram_bar_order = "VRAM→RAM";
+      }
+
+      // Warning thresholds
+      if (typeof this.properties.vram_warn_percent !== "number") {
+        this.properties.vram_warn_percent = 85;
+      }
+      if (typeof this.properties.ram_warn_percent !== "number") {
+        this.properties.ram_warn_percent = 90;
+      }
+      if (typeof this.properties.vram_warn_free_gib !== "number") {
+        this.properties.vram_warn_free_gib = 1.0;
       }
 
       // Widget to edit interval
@@ -108,9 +120,42 @@ app.registerExtension({
         { values: ["VRAM→RAM", "RAM→VRAM"] }
       );
 
+      this.addWidget(
+        "number",
+        "VRAM Warn (%)",
+        this.properties.vram_warn_percent,
+        (v) => {
+          const n = Number(v);
+          this.properties.vram_warn_percent = Number.isFinite(n) ? n : 85;
+        },
+        { precision: 1, step: 1, min: 0, max: 100 }
+      );
+
+      this.addWidget(
+        "number",
+        "VRAM Warn Free (GiB)",
+        this.properties.vram_warn_free_gib,
+        (v) => {
+          const n = Number(v);
+          this.properties.vram_warn_free_gib = Number.isFinite(n) ? n : 1.0;
+        },
+        { precision: 2, step: 0.25, min: 0 }
+      );
+
+      this.addWidget(
+        "number",
+        "RAM Warn (%)",
+        this.properties.ram_warn_percent,
+        (v) => {
+          const n = Number(v);
+          this.properties.ram_warn_percent = Number.isFinite(n) ? n : 90;
+        },
+        { precision: 1, step: 1, min: 0, max: 100 }
+      );
+
       // Make node tall enough for the bar
-      this.size = this.size || [240, 150];
-      this.size[1] = Math.max(this.size[1], 150);
+      this.size = this.size || [240, 240];
+      this.size[1] = Math.max(this.size[1], 240);
 
       return r;
     };
@@ -125,7 +170,10 @@ app.registerExtension({
       const x = padding;
       const barW = w - padding * 2;
       const barGap = 28;
-      const yRam = this.size[1] - padding - barH;
+      const panelH = 28;
+      const panelGap = 8;
+      const yPanel = this.size[1] - padding - panelH;
+      const yRam = yPanel - panelGap - barH;
       const yVram = yRam - barGap;
 
       const drawBar = (y, percent01, label, fillAlpha = 1) => {
@@ -195,6 +243,57 @@ app.registerExtension({
         drawBar(bottomY, ramP, ramLabel, 0.7);
       }
 
+      // Message panel (below bars)
+      const messages = [];
+      const vramWarnPercent = Number(this?.properties?.vram_warn_percent);
+      const ramWarnPercent = Number(this?.properties?.ram_warn_percent);
+      const vramWarnFreeGiB = Number(this?.properties?.vram_warn_free_gib);
+
+      const vramFreeBytes = typeof s?.free_bytes === "number" ? s.free_bytes : null;
+      const vramFreeGiB = vramFreeBytes != null ? vramFreeBytes / (1024 * 1024 * 1024) : null;
+
+      if (
+        s?.available &&
+        typeof s?.percent === "number" &&
+        Number.isFinite(vramWarnPercent) &&
+        s.percent >= vramWarnPercent
+      ) {
+        messages.push("VRAM WARNING");
+      }
+      if (
+        s?.available &&
+        vramFreeGiB != null &&
+        Number.isFinite(vramWarnFreeGiB) &&
+        vramFreeGiB <= vramWarnFreeGiB
+      ) {
+        if (!messages.includes("VRAM WARNING")) messages.push("VRAM WARNING");
+      }
+
+      if (
+        s?.ram_available &&
+        typeof s?.ram_percent === "number" &&
+        Number.isFinite(ramWarnPercent) &&
+        s.ram_percent >= ramWarnPercent
+      ) {
+        messages.push("RAM WARNING");
+      }
+
+      ctx.strokeStyle = "#666";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x, yPanel, barW, panelH);
+      ctx.save();
+      ctx.globalAlpha = 0.25;
+      ctx.fillStyle = "#000";
+      ctx.fillRect(x + 1, yPanel + 1, barW - 2, panelH - 2);
+      ctx.restore();
+
+      const msg = messages.join(" | ");
+      ctx.fillStyle = "#ddd";
+      ctx.font = "12px sans-serif";
+      if (msg) {
+        ctx.fillText(msg, x + 6, yPanel + 18);
+      }
+
       ctx.restore();
 
       // Polling (throttled)
@@ -214,6 +313,7 @@ app.registerExtension({
           this.vramWatcher.percent = typeof data.percent === "number" ? data.percent : 0;
           this.vramWatcher.used_bytes = data.used_bytes || 0;
           this.vramWatcher.total_bytes = data.total_bytes || 0;
+          this.vramWatcher.free_bytes = typeof data.free_bytes === "number" ? data.free_bytes : 0;
 
           this.vramWatcher.ram_available = !!data.ram_available;
           this.vramWatcher.ram_reason = data.ram_reason || "";
@@ -227,6 +327,7 @@ app.registerExtension({
           this.vramWatcher.percent = 0;
           this.vramWatcher.used_bytes = 0;
           this.vramWatcher.total_bytes = 0;
+          this.vramWatcher.free_bytes = 0;
 
           this.vramWatcher.ram_available = false;
           this.vramWatcher.ram_reason = String(e);

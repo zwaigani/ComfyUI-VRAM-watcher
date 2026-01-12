@@ -91,15 +91,18 @@ def _get_vram_status() -> Dict[str, Any]:
 
         # Use mem_get_info when available: returns (free, total)
         used = None
+        free_bytes = None
         try:
             free, total2 = torch.cuda.mem_get_info(device_index)
             total = int(total2)
             used = int(total - free)
+            free_bytes = int(free)
         except Exception:
             # Fallback to memory stats (allocated/reserved) if mem_get_info not supported
             allocated = int(torch.cuda.memory_allocated(device_index))
             reserved = int(torch.cuda.memory_reserved(device_index))
             used = max(allocated, reserved)
+            free_bytes = max(0, total - used)
 
         percent = float(used) / float(total) * 100.0 if total > 0 else 0.0
 
@@ -109,6 +112,7 @@ def _get_vram_status() -> Dict[str, Any]:
             "device_name": str(props.name),
             "total_bytes": int(total),
             "used_bytes": int(used),
+            "free_bytes": int(free_bytes) if free_bytes is not None else None,
             "percent": float(percent),
             "timestamp": time.time(),
             **base,
