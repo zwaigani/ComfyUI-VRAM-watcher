@@ -53,6 +53,15 @@ Tip: OOM can happen even when usage is below 90%, so using **VRAM Warn Free (GiB
 - Uses `torch` from your ComfyUI environment
 - Uses `psutil` for RAM stats on non-Linux platforms (see `requirements.txt`)
 
+### License
+
+MIT License. See [LICENSE](LICENSE).
+
+### Changelog / Releases
+
+- Changes are tracked in [CHANGELOG.md](CHANGELOG.md).
+- For a new release: update `CHANGELOG.md`, bump the version in `pyproject.toml`, create a git tag (e.g. `v1.0.1`), then publish a GitHub Release.
+
 ### Troubleshooting
 
 - **VRAM shows unavailable**
@@ -60,9 +69,7 @@ Tip: OOM can happen even when usage is below 90%, so using **VRAM Warn Free (GiB
 - **RAM shows unavailable on Windows/macOS**
   - `psutil` might not be installed
 
-### License
-
-MIT License. See [LICENSE](LICENSE).
+ 
 
 ---
 

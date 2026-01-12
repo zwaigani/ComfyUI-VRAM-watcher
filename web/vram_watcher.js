@@ -306,20 +306,31 @@ app.registerExtension({
 
       this.vramWatcher.inflight = true;
       fetch(API_URL)
-        .then((res) => res.json())
+        .then(async (res) => {
+          if (!res.ok) {
+            let body = "";
+            try {
+              body = await res.text();
+            } catch {
+              // ignore
+            }
+            throw new Error(`HTTP ${res.status} ${res.statusText}${body ? `: ${body}` : ""}`);
+          }
+          return res.json();
+        })
         .then((data) => {
           this.vramWatcher.available = !!data.available;
           this.vramWatcher.reason = data.reason || "";
           this.vramWatcher.percent = typeof data.percent === "number" ? data.percent : 0;
-          this.vramWatcher.used_bytes = data.used_bytes || 0;
-          this.vramWatcher.total_bytes = data.total_bytes || 0;
+          this.vramWatcher.used_bytes = typeof data.used_bytes === "number" ? data.used_bytes : 0;
+          this.vramWatcher.total_bytes = typeof data.total_bytes === "number" ? data.total_bytes : 0;
           this.vramWatcher.free_bytes = typeof data.free_bytes === "number" ? data.free_bytes : 0;
 
           this.vramWatcher.ram_available = !!data.ram_available;
           this.vramWatcher.ram_reason = data.ram_reason || "";
           this.vramWatcher.ram_percent = typeof data.ram_percent === "number" ? data.ram_percent : 0;
-          this.vramWatcher.ram_used_bytes = data.ram_used_bytes || 0;
-          this.vramWatcher.ram_total_bytes = data.ram_total_bytes || 0;
+          this.vramWatcher.ram_used_bytes = typeof data.ram_used_bytes === "number" ? data.ram_used_bytes : 0;
+          this.vramWatcher.ram_total_bytes = typeof data.ram_total_bytes === "number" ? data.ram_total_bytes : 0;
         })
         .catch((e) => {
           this.vramWatcher.available = false;

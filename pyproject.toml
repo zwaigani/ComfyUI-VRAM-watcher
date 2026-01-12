@@ -2,7 +2,15 @@
 name = "comfyui-vram-watcher"
 version = "1.0.0"
 description = "ComfyUI custom node that displays GPU VRAM and system RAM usage as a bar widget"
+readme = "README.md"
 requires-python = ">=3.8"
+
+# psutil is only used for RAM stats on non-Linux platforms.
+dependencies = [
+	"psutil>=5.9.0; platform_system != 'Linux'",
+]
+
+license = { file = "LICENSE" }
 
 [project.urls]
 Homepage = "https://github.com/zwaigani/ComfyUI-VRAM-watcher"
