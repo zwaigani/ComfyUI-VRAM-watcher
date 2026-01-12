@@ -57,7 +57,7 @@ Manager の「Install Custom Nodes」からインストールできるように�
 
 ```json
 {
-  "author": "<YOUR_NAME>",
+  "author": "zwaigani",
   "title": "ComfyUI-VRAM-watcher",
   "id": "comfyui-vram-watcher",
   "reference": "https://github.com/zwaigani/ComfyUI-VRAM-watcher",
@@ -72,4 +72,4 @@ Manager の「Install Custom Nodes」からインストールできるように�
 
 ## ライセンス
 
-ライセンスは未設定です。GitHub 公開前に（MIT / Apache-2.0 など）選んで `LICENSE` を追加するのがおすすめです。
+MIT License（[LICENSE](LICENSE)）。
