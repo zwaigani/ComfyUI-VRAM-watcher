@@ -1,11 +1,4 @@
-# ComfyUI-VRAM-watcher
-
-ComfyUI の画面上に **VRAM / RAM 使用量バー**を表示するためのシンプルなカスタムノードです。
-
-- VRAM: `torch.cuda` から取得（CUDA が無い場合は unavailable 表示）
-- RAM: Linux では `/proc/meminfo`、それ以外は `psutil` があれば取得
-
-## インストール
+![VRAM Watcher (Bar)](images/vram-watcher.png)
 
 # ComfyUI-VRAM-watcher
 
