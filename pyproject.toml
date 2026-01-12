@@ -1,0 +1,12 @@
+[project]
+name = "comfyui-vram-watcher"
+version = "1.0.0"
+description = "ComfyUI custom node that displays GPU VRAM and system RAM usage as a bar widget"
+requires-python = ">=3.8"
+
+[project.urls]
+Homepage = "https://github.com/zwaigani/ComfyUI-VRAM-watcher"
+Repository = "https://github.com/zwaigani/ComfyUI-VRAM-watcher"
+
+# ComfyUI-Manager note:
+# The folder name under `custom_nodes` may be normalized from this `name` field.

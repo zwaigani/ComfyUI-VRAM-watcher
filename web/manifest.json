@@ -1,0 +1,6 @@
+{
+  "name": "VRAM Watcher",
+  "version": "1.0.0",
+  "description": "Displays GPU VRAM usage as a bar widget",
+  "main": "vram_watcher.js"
+}
